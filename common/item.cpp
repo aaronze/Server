@@ -55,6 +55,296 @@ static inline int32 GetNextItemInstSerialNumber() {
 
 
 //
+// class ItemSlot
+//
+void ItemSlot::Invalidate(ItemSlot_Struct& itemSlotStruct)
+{
+	itemSlotStruct.indexMap = INVALID_INDEX;
+	itemSlotStruct.unknown02 = NOT_USED;
+	itemSlotStruct.indexMain = INVALID_INDEX;
+	itemSlotStruct.indexSub = INVALID_INDEX;
+	itemSlotStruct.indexAug = INVALID_INDEX;
+	itemSlotStruct.unknown01 = NOT_USED;
+}
+
+void ItemSlot::Invalidate(ItemSlotShort_Struct& itemSlotStruct)
+{
+	itemSlotStruct.indexMain = INVALID_INDEX;
+	itemSlotStruct.indexSub = INVALID_INDEX;
+	itemSlotStruct.indexAug = INVALID_INDEX;
+	itemSlotStruct.unknown01 = NOT_USED;
+}
+
+bool ItemSlot::IsInvalid(ItemSlot_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMap != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.unknown02 != NOT_USED) { return false; }
+	if (itemSlotStruct.indexMain != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.unknown01 != NOT_USED) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsInvalid(ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMain != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.unknown01 != NOT_USED) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsDelete(ItemSlot_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMap != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexMain != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsDelete(ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMain != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsMain(ItemSlot_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMap == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsMain(ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsSub(ItemSlot_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMap == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsSub(ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug != INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsMainAug(ItemSlot_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMap == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug == INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsMainAug(ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub != INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug == INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsSubAug(ItemSlot_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMap == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug == INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsSubAug(ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (itemSlotStruct.indexMain == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexSub == INVALID_INDEX) { return false; }
+	if (itemSlotStruct.indexAug == INVALID_INDEX) { return false; }
+
+	return true;
+}
+
+bool ItemSlot::IsEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2)
+{
+	if (itemSlotStruct1.indexMap != itemSlotStruct2.indexMap) { return false; }
+	if (itemSlotStruct1.unknown02 != itemSlotStruct2.unknown02) { return false; } // will probably cause issues
+	if (itemSlotStruct1.indexMain != itemSlotStruct2.indexMain) { return false; }
+	if (itemSlotStruct1.indexSub != itemSlotStruct2.indexSub) { return false; }
+	if (itemSlotStruct1.indexAug != itemSlotStruct2.indexAug) { return false; }
+	if (itemSlotStruct1.unknown01 != itemSlotStruct2.unknown01) { return false; } // will probably cause issues
+
+	return true;
+}
+
+bool ItemSlot::IsEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2)
+{
+	if (itemSlotStruct1.indexMain != itemSlotStruct2.indexMain) { return false; }
+	if (itemSlotStruct1.indexSub != itemSlotStruct2.indexSub) { return false; }
+	if (itemSlotStruct1.indexAug != itemSlotStruct2.indexAug) { return false; }
+	if (itemSlotStruct1.unknown01 != itemSlotStruct2.unknown01) { return false; } // will probably cause issues
+
+	return true;
+}
+
+bool ItemSlot::IsEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2)
+{
+	return ItemSlot::IsEqual(itemSlotStruct2, itemSlotStruct1);
+}
+
+bool ItemSlot::IsEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2)
+{
+	if (itemSlotStruct1.indexMain != itemSlotStruct2.indexMain) { return false; }
+	if (itemSlotStruct1.indexSub != itemSlotStruct2.indexSub) { return false; }
+	if (itemSlotStruct1.indexAug != itemSlotStruct2.indexAug) { return false; }
+	if (itemSlotStruct1.unknown01 != itemSlotStruct2.unknown01) { return false; } // will probably cause issues
+
+	return true;
+}
+
+bool ItemSlot::IsNotEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2)
+{
+	if (itemSlotStruct1.indexMap == itemSlotStruct2.indexMap) {
+		if (itemSlotStruct1.unknown02 == itemSlotStruct2.unknown02) { // will probably cause issues
+			if (itemSlotStruct1.indexMain == itemSlotStruct2.indexMain) {
+				if (itemSlotStruct1.indexSub == itemSlotStruct2.indexSub) {
+					if (itemSlotStruct1.indexAug == itemSlotStruct2.indexAug) {
+						if (itemSlotStruct1.unknown01 == itemSlotStruct2.unknown01) { // will probably cause issues
+							return false;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool ItemSlot::IsNotEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2)
+{
+	if (itemSlotStruct1.indexMain == itemSlotStruct2.indexMain) {
+		if (itemSlotStruct1.indexSub == itemSlotStruct2.indexSub) {
+			if (itemSlotStruct1.indexAug == itemSlotStruct2.indexAug) {
+				if (itemSlotStruct1.unknown01 == itemSlotStruct2.unknown01) { // will probably cause issues
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool ItemSlot::IsNotEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2)
+{
+	return ItemSlot::IsNotEqual(itemSlotStruct2, itemSlotStruct1);
+}
+
+bool ItemSlot::IsNotEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2)
+{
+	if (itemSlotStruct1.indexMain == itemSlotStruct2.indexMain) {
+		if (itemSlotStruct1.indexSub == itemSlotStruct2.indexSub) {
+			if (itemSlotStruct1.indexAug == itemSlotStruct2.indexAug) {
+				if (itemSlotStruct1.unknown01 == itemSlotStruct2.unknown01) { // will probably cause issues
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+void ItemSlot::GetItemSlot(ItemSlot_Struct& itemSlotStruct)
+{
+	itemSlotStruct.indexMap = m_ItemSlotStruct.indexMap;
+	itemSlotStruct.unknown02 = m_ItemSlotStruct.unknown02;
+	itemSlotStruct.indexMain = m_ItemSlotStruct.indexMain;
+	itemSlotStruct.indexSub = m_ItemSlotStruct.indexSub;
+	itemSlotStruct.indexAug = m_ItemSlotStruct.indexAug;
+	itemSlotStruct.unknown01 = m_ItemSlotStruct.unknown01;
+}
+
+void ItemSlot::GetItemSlot(ItemSlotShort_Struct& itemSlotStruct)
+{
+	itemSlotStruct.indexMain = m_ItemSlotStruct.indexMain;
+	itemSlotStruct.indexSub = m_ItemSlotStruct.indexSub;
+	itemSlotStruct.indexAug = m_ItemSlotStruct.indexAug;
+	itemSlotStruct.unknown01 = m_ItemSlotStruct.unknown01;
+}
+
+void ItemSlot::SetItemSlot(ItemSlot_Struct& itemSlotStruct)
+{
+	m_ItemSlotStruct.indexMap = itemSlotStruct.indexMap;
+	m_ItemSlotStruct.unknown02 = itemSlotStruct.unknown02;
+	m_ItemSlotStruct.indexMain = itemSlotStruct.indexMain;
+	m_ItemSlotStruct.indexSub = itemSlotStruct.indexSub;
+	m_ItemSlotStruct.indexAug = itemSlotStruct.indexAug;
+	m_ItemSlotStruct.unknown01 = itemSlotStruct.unknown01;
+}
+
+void ItemSlot::SetItemSlot(ItemSlotShort_Struct& itemSlotStruct)
+{
+	m_ItemSlotStruct.indexMap = INVALID_INDEX;
+	m_ItemSlotStruct.unknown02 = NOT_USED;
+	m_ItemSlotStruct.indexMain = itemSlotStruct.indexMain;
+	m_ItemSlotStruct.indexSub = itemSlotStruct.indexSub;
+	m_ItemSlotStruct.indexAug = itemSlotStruct.indexAug;
+	m_ItemSlotStruct.unknown01 = itemSlotStruct.unknown01;
+}
+
+
+//
+// class MobInventory
+//
+MobInventory::MobInventory()
+{
+	// TODO: in-work
+}
+
+MobInventory::MobInventory(MobInventory& instance)
+{
+	// TODO: in-work
+}
+
+MobInventory::~MobInventory()
+{
+	// TODO: in-work
+}
+
+
+// inventory v2 demarcation
+
+
+//
 // class ItemInstQueue
 //
 ItemInstQueue::~ItemInstQueue() {

@@ -38,6 +38,103 @@ class EvolveInfo;			// Stores information about an evolving item family
 #include "../common/item_struct.h"
 #include "../common/timer.h"
 
+
+class ItemContainer;
+class ItemInstance;
+class ItemSlot;
+class MobInventory;
+
+typedef std::vector<ItemContainer*> icontainers;
+typedef std::vector<ItemInstance*> ivector;
+typedef std::list<ItemInstance*> ilist;
+
+
+//
+// class ItemSlot
+//
+class ItemSlot
+{
+public:
+	// global methods
+	static void Invalidate(ItemSlot_Struct& itemSlotStruct);
+	static void Invalidate(ItemSlotShort_Struct& itemSlotStruct);
+
+	static bool IsInvalid(ItemSlot_Struct& itemSlotStruct);
+	static bool IsInvalid(ItemSlotShort_Struct& itemSlotStruct);
+	static bool IsDelete(ItemSlot_Struct& itemSlotStruct);
+	static bool IsDelete(ItemSlotShort_Struct& itemSlotStruct);
+	static bool IsMain(ItemSlot_Struct& itemSlotStruct);
+	static bool IsMain(ItemSlotShort_Struct& itemSlotStruct);
+	static bool IsSub(ItemSlot_Struct& itemSlotStruct);
+	static bool IsSub(ItemSlotShort_Struct& itemSlotStruct);
+	static bool IsMainAug(ItemSlot_Struct& itemSlotStruct);
+	static bool IsMainAug(ItemSlotShort_Struct& itemSlotStruct);
+	static bool IsSubAug(ItemSlot_Struct& itemSlotStruct);
+	static bool IsSubAug(ItemSlotShort_Struct& itemSlotStruct);
+
+	static bool IsEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2);
+	static bool IsEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2);
+	static bool IsEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2);
+	static bool IsEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2);
+	static bool IsNotEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2);
+	static bool IsNotEqual(ItemSlot_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2);
+	static bool IsNotEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2);
+	static bool IsNotEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2);
+
+	// local methods
+	void Invalidate() { ItemSlot::Invalidate(m_ItemSlotStruct); }
+
+	bool IsInvalid() { return ItemSlot::IsInvalid(m_ItemSlotStruct); }
+	bool IsDelete() { return ItemSlot::IsDelete(m_ItemSlotStruct); }
+	bool IsMain() { return ItemSlot::IsMain(m_ItemSlotStruct); }
+	bool IsSub() { return ItemSlot::IsSub(m_ItemSlotStruct); }
+	bool IsMainAug() { return ItemSlot::IsMainAug(m_ItemSlotStruct); }
+	bool IsSubAug() { return ItemSlot::IsSubAug(m_ItemSlotStruct); }
+
+	bool IsEqual(ItemSlot_Struct& itemSlotStruct) { return ItemSlot::IsEqual(m_ItemSlotStruct, itemSlotStruct); }
+	bool IsEqual(ItemSlotShort_Struct& itemSlotStruct) { return ItemSlot::IsEqual(m_ItemSlotStruct, itemSlotStruct); }
+	bool IsNotEqual(ItemSlot_Struct& itemSlotStruct) { return ItemSlot::IsNotEqual(m_ItemSlotStruct, itemSlotStruct); }
+	bool IsNotEqual(ItemSlotShort_Struct& itemSlotStruct) { return ItemSlot::IsNotEqual(m_ItemSlotStruct, itemSlotStruct); }
+
+	void GetItemSlot(ItemSlot_Struct& itemSlotStruct);
+	void GetItemSlot(ItemSlotShort_Struct& itemSlotStruct);
+	void SetItemSlot(ItemSlot_Struct& itemSlotStruct);
+	void SetItemSlot(ItemSlotShort_Struct& itemSlotStruct);
+
+	void operator = (ItemSlot_Struct& itemSlotStruct) { SetItemSlot(itemSlotStruct); }
+	void operator = (ItemSlotShort_Struct& itemSlotStruct) { SetItemSlot(itemSlotStruct); }
+	bool operator == (ItemSlot_Struct& itemSlotStruct) { return IsEqual(itemSlotStruct); }
+	bool operator == (ItemSlotShort_Struct& itemSlotStruct) { return IsEqual(itemSlotStruct); }
+	bool operator != (ItemSlot_Struct& itemSlotStruct) { return IsNotEqual(itemSlotStruct); }
+	bool operator != (ItemSlotShort_Struct& itemSlotStruct) { return IsNotEqual(itemSlotStruct); }
+
+private:
+	ItemSlot_Struct m_ItemSlotStruct;
+};
+
+
+//
+// class MobInventory
+//
+class MobInventory
+{
+public:
+	MobInventory();
+	MobInventory(MobInventory& inventoryInstance);
+
+	~MobInventory();
+
+protected:
+
+
+private:
+	icontainers m_Containers;
+
+	ItemSlot m_ItemSlot;
+};
+
+
+
 // Helper typedefs
 typedef std::list<ItemInst*>::const_iterator				iter_queue;
 typedef std::map<int16, ItemInst*>::const_iterator			iter_inst;
