@@ -452,6 +452,42 @@ void ItemSlot::SetItemSlot(ItemSlotShort_Struct& itemSlotStruct)
 
 
 //
+// class HasItemQuery
+//
+HasItemQuery::HasItemQuery()
+{
+	m_Inventory = nullptr;
+	m_Type = HIQTNone;
+	m_Locations = HIQLNowhere;
+
+	m_ExternalList = nullptr;
+	m_Success = false;
+}
+
+HasItemQuery::~HasItemQuery()
+{
+	m_Inventory = nullptr;
+	m_ExternalList = nullptr;
+
+	m_ResultList.clear();
+}
+
+void HasItemQuery::Execute()
+{
+	if (m_Inventory == nullptr) { return; }
+	if (m_Type == HIQTNone) { return; }
+	if (m_Locations == HIQLNowhere) { return; }
+	
+	// TODO: write handler
+
+	if (m_ExternalList != nullptr)
+		*m_ExternalList = m_ResultList;
+
+	m_Success = !(m_ResultList.empty());
+}
+
+
+//
 // class MobInventory
 //
 void MobInventory::MarkDirty(ItemInstance* itemInstance)

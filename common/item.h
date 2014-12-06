@@ -49,6 +49,9 @@ typedef std::vector<ItemContainer*> icontainers;
 typedef std::vector<ItemInstance*> ivector;
 typedef std::list<ItemInstance*> ilist;
 
+// need to create 
+typedef std::list<ItemSlot_Struct> iresultlist;
+
 
 //
 // class ItemContainer
@@ -158,12 +161,96 @@ private:
 };
 
 
+enum HIQueryTypes
+{
+	HIQTNone = 0,
+	HIQTExtant,
+	HIQTItemID
+};
+
+enum HIQueryLocations
+{
+	// nowhere
+	HIQLNowhere = 0x00000000,
+	// possessions segment-based
+	HIQLEquipment = 0x00000001,
+	HIQLGeneral = 0x00000002,
+	HIQLCursor = 0x00000004,
+	// map-based
+	HIQLPossessions = 0x00000007,
+	HIQLBank = 0x00000008,
+	HIQLSharedBank = 0x00000010,
+	HIQLTrade = 0x00000020,
+	HIQLWorld = 0x00000040,
+	HIQLLimbo = 0x00000080,
+	HIQLTribute = 0x00000100,
+	HIQLTrophyTribute = 0x00000200,
+	HIQLGuildTribute = 0x00000400,
+	HIQLMerchant = 0x00000800,
+	HIQLDeleted = 0x00001000,
+	HIQLCorpse = 0x00002000,
+	HIQLBazaar = 0x00004000,
+	HIQLInspect = 0x00008000,
+	HIQLRealEstate = 0x00010000,
+	HIQLViewMODPC = 0x00020000,
+	HIQLViewMODBank = 0x00040000,
+	HIQLViewMODSharedBank = 0x00080000,
+	HIQLViewMODLimbo = 0x00100000,
+	HIQLAltStorage = 0x00200000,
+	HIQLArchived = 0x00400000,
+	HIQLMail = 0x00800000,
+	HIQLGuildTrophyTribute = 0x01000000,
+	HIQLKrono = 0x02000000,
+	HIQLOther = 0x04000000,
+	// range-based
+	HIQLConstant = 0x00000000, // double-check..likely {possessions, bank, sharedbank, tribute (, others?)}
+	HIQLAllBank = 0x00000018,
+	HIQLLegacy = 0x00000000, // {worn, personal, bank, sharedbank, trading, cursor} - may do with just HIQLConstant
+	HIQLEverywhere = 0xFFFFFFFF
+};
+
+
+//
+// class HasItemQuery
+//
+class HasItemQuery
+{
+public:
+	HasItemQuery();
+	~HasItemQuery();
+
+	void Inventory(MobInventory* queryInventory) { m_Inventory = queryInventory; }
+	void Type(uint8 queryType) { m_Type = queryType; }
+	void Locations(uint32 queryLocations) { m_Locations = queryLocations; }
+
+	MobInventory* Inventory() { return m_Inventory; }
+	uint8 Type() { return m_Type; }
+	uint32 Locations() { return m_Locations; }
+
+	void Execute();
+
+	iresultlist* ResultList() { return &m_ResultList; }
+
+	bool Success() { return m_Success; }
+
+private:
+	MobInventory* m_Inventory;
+	uint8 m_Type;
+	uint32 m_Locations;
+
+	iresultlist m_ResultList;
+	iresultlist* m_ExternalList;
+	bool m_Success;
+};
+
+
 //
 // class MobInventory
 //
 class MobInventory
 {
 	friend class MobInventoryFactory;
+	friend class HasItemQuery;
 
 public:
 	static void MarkDirty(ItemInstance* itemInstance);
