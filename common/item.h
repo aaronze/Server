@@ -43,10 +43,55 @@ class ItemContainer;
 class ItemInstance;
 class ItemSlot;
 class MobInventory;
+class MobInventoryFactory;
 
 typedef std::vector<ItemContainer*> icontainers;
 typedef std::vector<ItemInstance*> ivector;
 typedef std::list<ItemInstance*> ilist;
+
+
+//
+// class ItemContainer
+//
+class ItemContainer
+{
+	friend class Object;
+	friend class MobInventory;
+	friend class MobInventoryFactory;
+
+public:
+	~ItemContainer();
+
+	void Initialize(size_t size);
+
+	size_t Size() { return m_Bucket.size(); }
+	size_t Count();
+	bool Empty();
+	
+	const ItemInstance* InstanceAt(size_t index) const;
+	const Item_Struct* ItemAt(size_t index) const;
+	const Item_Struct* BaseItemAt(size_t index) const;
+
+protected:
+	ItemContainer(ItemContainer& itemContainer);
+	ItemContainer(size_t size = 0) { Initialize(size); }
+
+	void Resize(size_t size) { m_Bucket.resize(size); }
+	void Concatenate();
+	void ClearBucket();
+	void ConsumeBucket();
+
+	ivector& Bucket() { return m_Bucket; }
+
+	ItemInstance* InstanceAt(size_t index);
+	void AssignInstanceTo(size_t index, ItemInstance* itemInstance);
+	ItemInstance* RemoveInstanceFrom(size_t index);
+	void PopInstanceFrom(size_t index);
+	void DeleteInstanceFrom(size_t index);
+
+private:
+	ivector m_Bucket;
+};
 
 
 //
@@ -118,21 +163,50 @@ private:
 //
 class MobInventory
 {
+	friend class MobInventoryFactory;
+
 public:
-	MobInventory();
-	MobInventory(MobInventory& inventoryInstance);
+	static void MarkDirty(ItemInstance* itemInstance);
+	static void CleanDirty();
 
 	~MobInventory();
 
 protected:
-
+	MobInventory();
 
 private:
+	EQClientVersion m_Version;
+
+	uint16 m_MapSize[_MapCount];
+	uint64 m_PossessionsBitmask;
+	uint64 m_EquipmentBitmask;
+	uint64 m_GeneralBitmask;
+	uint64 m_CursorBitmask;
+
+	uint16 m_ItemClassSize[_ItemClassCount];
+
 	icontainers m_Containers;
 
 	ItemSlot m_ItemSlot;
 };
 
+
+//
+// class MobInventoryFactory
+//
+class MobInventoryFactory
+{
+public:
+	static MobInventory* GenerateInventory(EQClientVersion version = EQClientUnknown);
+	static void ReconfigureInventory(MobInventory* inventoryInstance, EQClientVersion inventoryVersion);
+};
+
+
+// ************************
+//
+// inventory v2 demarcation
+//
+// ************************
 
 
 // Helper typedefs

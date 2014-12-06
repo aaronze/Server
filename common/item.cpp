@@ -29,8 +29,9 @@
 
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
-std::list<ItemInst*> dirty_inst;
+ilist dirty_instance;
 int32 NextItemInstSerialNumber = 1;
 
 static inline int32 GetNextItemInstSerialNumber() {
@@ -51,6 +52,134 @@ static inline int32 GetNextItemInstSerialNumber() {
 		NextItemInstSerialNumber++;
 
 	return NextItemInstSerialNumber;
+}
+
+
+//
+// class ItemContainer
+//
+ItemContainer::~ItemContainer()
+{
+	ConsumeBucket();
+}
+
+void ItemContainer::Initialize(size_t size)
+{
+	Resize(size);
+	ClearBucket();
+}
+
+size_t ItemContainer::Count()
+{
+	size_t count = 0;
+	for (ivector::iterator iter = m_Bucket.begin(); iter != m_Bucket.end(); ++iter) {
+		if(*iter != nullptr)
+			++count;
+	}
+	return count;
+}
+
+bool ItemContainer::Empty()
+{
+	for (ivector::iterator iter = m_Bucket.begin(); iter != m_Bucket.end(); ++iter) {
+		if (*iter != nullptr)
+			return false;
+	}
+	return true;
+}
+
+const ItemInstance* ItemContainer::InstanceAt(size_t index) const
+{
+	if (index >= m_Bucket.size())
+		return nullptr;
+	return m_Bucket[index];
+}
+
+const Item_Struct* ItemContainer::ItemAt(size_t index) const
+{
+	if (index >= m_Bucket.size())
+		return nullptr;
+	if (m_Bucket[index] == nullptr)
+		return nullptr;
+	// TODO: return (const Item_Struct*)m_Bucket[index]->GetItem();
+}
+
+const Item_Struct* ItemContainer::BaseItemAt(size_t index) const
+{
+	if (index >= m_Bucket.size())
+		return nullptr;
+	if (m_Bucket[index] == nullptr)
+		return nullptr;
+	// TODO: return (const Item_Struct*)m_Bucket[index]->GetBaseItem();
+}
+
+ItemContainer::ItemContainer(ItemContainer& itemContainer)
+{
+	Initialize(itemContainer.Size());
+	// TODO: copy contents
+}
+
+void ItemContainer::Concatenate()
+{
+	auto size = m_Bucket.size();
+	auto iterNewEnd = std::remove_if(m_Bucket.begin(), m_Bucket.end(), [](ivector::iterator iter) { return *iter == nullptr; });
+	m_Bucket.erase(iterNewEnd, m_Bucket.end());
+	m_Bucket.resize(size);
+}
+
+void ItemContainer::ClearBucket()
+{
+	for (ivector::iterator iter = m_Bucket.begin(); iter != m_Bucket.end(); ++iter) {
+		*iter = nullptr;
+	}
+}
+
+void ItemContainer::ConsumeBucket()
+{
+	for (ivector::iterator iter = m_Bucket.begin(); iter != m_Bucket.end(); ++iter) {
+		MobInventory::MarkDirty(*iter);
+		*iter = nullptr;
+	}
+}
+
+ItemInstance* ItemContainer::InstanceAt(size_t index)
+{
+	if (index >= m_Bucket.size())
+		return nullptr;
+	return m_Bucket[index];
+}
+
+void ItemContainer::AssignInstanceTo(size_t index, ItemInstance* itemInstance)
+{
+	if (index >= m_Bucket.size()) {
+		MobInventory::MarkDirty(itemInstance);
+		return;
+	}
+	m_Bucket[index] = itemInstance;
+}
+
+ItemInstance* ItemContainer::RemoveInstanceFrom(size_t index)
+{
+	if (index >= m_Bucket.size())
+		return nullptr;
+	ItemInstance* itemInstance = m_Bucket[index];
+	m_Bucket[index] = nullptr;
+	return itemInstance;
+}
+
+void ItemContainer::PopInstanceFrom(size_t index)
+{
+	if (index >= m_Bucket.size())
+		return;
+	m_Bucket[index] = nullptr;
+}
+
+void ItemContainer::DeleteInstanceFrom(size_t index)
+{
+	if (index >= m_Bucket.size())
+		return;
+	MobInventory::MarkDirty(m_Bucket[index]);
+	m_Bucket[index] = nullptr;
 }
 
 
@@ -325,14 +454,18 @@ void ItemSlot::SetItemSlot(ItemSlotShort_Struct& itemSlotStruct)
 //
 // class MobInventory
 //
-MobInventory::MobInventory()
+void MobInventory::MarkDirty(ItemInstance* itemInstance)
 {
-	// TODO: in-work
+	if (itemInstance)
+		dirty_instance.push_back(itemInstance);
 }
 
-MobInventory::MobInventory(MobInventory& instance)
+void MobInventory::CleanDirty()
 {
-	// TODO: in-work
+	for (ilist::iterator iter = dirty_instance.begin(); iter != dirty_instance.end(); ++iter) {
+		safe_delete(*iter);
+	}
+	dirty_instance.clear();
 }
 
 MobInventory::~MobInventory()
@@ -340,8 +473,38 @@ MobInventory::~MobInventory()
 	// TODO: in-work
 }
 
+MobInventory::MobInventory()
+{
+	// TODO: in-work
+}
 
+
+//
+// class MobInventoryFactory
+//
+MobInventory* MobInventoryFactory::GenerateInventory(EQClientVersion version)
+{
+	MobInventory* inventoryInstance = new MobInventory();
+
+	MobInventoryFactory::ReconfigureInventory(inventoryInstance, version);
+
+	return inventoryInstance;
+}
+
+void MobInventoryFactory::ReconfigureInventory(MobInventory* inventoryInstance, EQClientVersion inventoryVersion)
+{
+	// TODO: add configuration code (needs EQDictionary entry)
+}
+
+
+// ************************
+//
 // inventory v2 demarcation
+//
+// ************************
+
+
+std::list<ItemInst*> dirty_inst;
 
 
 //
