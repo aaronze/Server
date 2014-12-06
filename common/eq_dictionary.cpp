@@ -1044,7 +1044,83 @@ bool EQLimits::AllowsClickCastFromBag(uint32 version) {
 	return local[ValidateMobVersion(version)];
 }
 
+bool EQLimits::RequiresLimboConcatenation(uint32 version)
+{
+	static const uint16 local[_EmuClientCount] = {
+/*Unknown*/		NOT_USED,
+/*62*/			Client62::limits::USES_LIMBO_QUEUE,
+/*Titanium*/	Titanium::limits::USES_LIMBO_QUEUE,
+/*SoF*/			SoF::limits::USES_LIMBO_QUEUE,
+/*SoD*/			SoD::limits::USES_LIMBO_QUEUE,
+/*Underfoot*/	Underfoot::limits::USES_LIMBO_QUEUE,
+/*RoF*/			RoF::limits::USES_LIMBO_QUEUE,
+/*RoF2*/		RoF2::limits::USES_LIMBO_QUEUE,
+
+/*NPC*/			false,
+/*Merc*/		false,
+/*Bot*/			false,
+/*Pet*/			false
+	};
+
+	return local[ValidateMobVersion(version)];
+}
+
 // items
+uint16 EQLimits::ItemClassSize(uint8 itemClass, uint32 version)
+{
+	static const uint16 local[_ItemClassCount][_EmuClientCount] = {
+		{
+/*Unknown*/		NOT_USED,
+/*62*/			Client62::consts::ITEM_COMMON_SIZE,
+/*Titanium*/	Titanium::consts::ITEM_COMMON_SIZE,
+/*SoF*/			SoF::consts::ITEM_COMMON_SIZE,
+/*SoD*/			SoD::consts::ITEM_COMMON_SIZE,
+/*Underfoot*/	Underfoot::consts::ITEM_COMMON_SIZE,
+/*RoF*/			RoF::consts::ITEM_COMMON_SIZE,
+/*RoF2*/		RoF2::consts::ITEM_COMMON_SIZE,
+
+/*NPC*/			EmuConstants::ITEM_COMMON_SIZE,
+/*Merc*/		EmuConstants::ITEM_COMMON_SIZE,
+/*Bot*/			EmuConstants::ITEM_COMMON_SIZE,
+/*Pet*/			EmuConstants::ITEM_COMMON_SIZE
+		},
+		{
+/*Unknown*/		NOT_USED,
+/*62*/			Client62::consts::ITEM_CONTAINER_SIZE,
+/*Titanium*/	Titanium::consts::ITEM_CONTAINER_SIZE,
+/*SoF*/			SoF::consts::ITEM_CONTAINER_SIZE,
+/*SoD*/			SoD::consts::ITEM_CONTAINER_SIZE,
+/*Underfoot*/	Underfoot::consts::ITEM_CONTAINER_SIZE,
+/*RoF*/			RoF::consts::ITEM_CONTAINER_SIZE,
+/*RoF2*/		RoF2::consts::ITEM_CONTAINER_SIZE,
+
+/*NPC*/			EmuConstants::ITEM_CONTAINER_SIZE,
+/*Merc*/		EmuConstants::ITEM_CONTAINER_SIZE,
+/*Bot*/			EmuConstants::ITEM_CONTAINER_SIZE,
+/*Pet*/			EmuConstants::ITEM_CONTAINER_SIZE
+		},
+		{
+/*Unknown*/		NOT_USED,
+/*62*/			NOT_USED,
+/*Titanium*/	NOT_USED,
+/*SoF*/			NOT_USED,
+/*SoD*/			NOT_USED,
+/*Underfoot*/	NOT_USED,
+/*RoF*/			NOT_USED,
+/*RoF2*/		NOT_USED,
+
+/*NPC*/			NOT_USED,
+/*Merc*/		NOT_USED,
+/*Bot*/			NOT_USED,
+/*Pet*/			NOT_USED
+		}
+	};
+
+	if (itemClass >= _ItemClassCount)
+		return NOT_USED;
+	return local[itemClass][ValidateMobVersion(version)];
+}
+
 uint16 EQLimits::ItemCommonSize(uint32 version) {
 	static const uint16 local[_EmuClientCount] = {
 /*Unknown*/		NOT_USED,

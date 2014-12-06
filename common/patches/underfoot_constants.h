@@ -183,6 +183,7 @@ namespace Underfoot {
 		static const bool ALLOWS_EMPTY_BAG_IN_BAG = false;
 		static const bool ALLOWS_CLICK_CAST_FROM_BAG = false;
 		static const bool COIN_HAS_WEIGHT = false;
+		static const bool USES_LIMBO_QUEUE = true;
 	}
 
 };	//end namespace Underfoot

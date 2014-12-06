@@ -185,8 +185,10 @@ public:
 
 	static bool	AllowsEmptyBagInBag(uint32 version);
 	static bool AllowsClickCastFromBag(uint32 version);
+	static bool RequiresLimboConcatenation(uint32 version);
 
 	// items
+	static uint16	ItemClassSize(uint8 itemClass, uint32 version);
 	static uint16	ItemCommonSize(uint32 version);
 	static uint16	ItemContainerSize(uint32 version);
 

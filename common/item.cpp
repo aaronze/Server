@@ -493,7 +493,19 @@ MobInventory* MobInventoryFactory::GenerateInventory(EQClientVersion version)
 
 void MobInventoryFactory::ReconfigureInventory(MobInventory* inventoryInstance, EQClientVersion inventoryVersion)
 {
-	// TODO: add configuration code (needs EQDictionary entry)
+	for (int16 mapIndex = MAP_BEGIN; mapIndex < _MapCount; ++mapIndex)
+		inventoryInstance->m_MapSize[mapIndex] = EQLimits::InventoryMapSize(mapIndex, inventoryVersion);
+
+	inventoryInstance->m_PossessionsBitmask = EQLimits::PossessionsBitmask(inventoryVersion);
+	inventoryInstance->m_EquipmentBitmask = EQLimits::EquipmentBitmask(inventoryVersion);
+	inventoryInstance->m_GeneralBitmask = EQLimits::GeneralBitmask(inventoryVersion);
+	inventoryInstance->m_CursorBitmask = EQLimits::CursorBitmask(inventoryVersion);
+
+	for (uint8 itemClass = ItemClassCommon; itemClass < _ItemClassCount; ++itemClass)
+		inventoryInstance->m_ItemClassSize[itemClass] = EQLimits::ItemClassSize(itemClass, inventoryVersion);
+
+	inventoryInstance->m_ConcatenateLimbo = EQLimits::RequiresLimboConcatenation(inventoryVersion);
+	inventoryInstance->m_Version = inventoryVersion;
 }
 
 

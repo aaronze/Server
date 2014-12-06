@@ -175,8 +175,6 @@ protected:
 	MobInventory();
 
 private:
-	EQClientVersion m_Version;
-
 	uint16 m_MapSize[_MapCount];
 	uint64 m_PossessionsBitmask;
 	uint64 m_EquipmentBitmask;
@@ -187,7 +185,11 @@ private:
 
 	icontainers m_Containers;
 
+	bool m_ConcatenateLimbo;
+
 	ItemSlot m_ItemSlot;
+
+	EQClientVersion m_Version;
 };
 
 
