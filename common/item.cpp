@@ -458,10 +458,24 @@ HasItemQuery::HasItemQuery()
 {
 	m_Inventory = nullptr;
 	m_Type = HIQTNone;
-	m_Locations = HIQLNowhere;
+
+	for (size_t indexMap = MAP_BEGIN; indexMap < _MapCount; ++indexMap) {
+		m_Locations[indexMap] = false;
+	}
+	
+	m_Equipment = false;
+	m_General = false;
+	m_Cursor = false;
+	m_LocationSet = false;
+	m_IgnoreMain = false;
+	m_IgnoreSub = false;
+	m_IgnoreMainAug = false;
+	m_IgnoreSubAug = false;
+
+	ItemSlot::Invalidate(m_TestSlot);
 
 	m_ExternalList = nullptr;
-	m_Success = false;
+	m_Found = false;
 }
 
 HasItemQuery::~HasItemQuery()
@@ -472,18 +486,258 @@ HasItemQuery::~HasItemQuery()
 	m_ResultList.clear();
 }
 
+void HasItemQuery::FlagMap(InventoryMapTypes mapIndex)
+{
+	m_Locations[mapIndex] = true;
+	if (mapIndex == MapPossessions) {
+		m_Equipment = true;
+		m_General = true;
+		m_Cursor = true;
+	}
+	m_LocationSet = true;
+}
+
+void HasItemQuery::FlagEquipment()
+{
+	m_Equipment = true;
+	m_Locations[MapPossessions] = true;
+	m_LocationSet = true;
+}
+
+void HasItemQuery::FlagGeneral()
+{
+	m_General = true;
+	m_Locations[MapPossessions] = true;
+	m_LocationSet = true;
+}
+
+void HasItemQuery::FlagCursor()
+{
+	m_Cursor = true;
+	m_Locations[MapPossessions] = true;
+	m_LocationSet = true;
+}
+
+void HasItemQuery::FlagDefault()
+{
+	FlagMap(MapPossessions); // sets m_LocationSet = true;
+	m_Locations[MapBank] = true;
+	m_Locations[MapSharedBank] = true;
+	m_Locations[MapTrade] = true;
+	m_Locations[MapWorld] = true;
+}
+
 void HasItemQuery::Execute()
 {
 	if (m_Inventory == nullptr) { return; }
 	if (m_Type == HIQTNone) { return; }
-	if (m_Locations == HIQLNowhere) { return; }
+	if (!m_LocationSet) { return; }
+	if (m_IgnoreMain && m_IgnoreSub && m_IgnoreMainAug && m_IgnoreSubAug) { return; }
 	
-	// TODO: write handler
+	// TODO: add additional flag and criteria validations
+
+	execute_();
 
 	if (m_ExternalList != nullptr)
 		*m_ExternalList = m_ResultList;
 
-	m_Success = !(m_ResultList.empty());
+	m_Found = !(m_ResultList.empty());
+}
+
+void HasItemQuery::execute_()
+{
+	if (m_Locations[MapPossessions]) {
+		while (true) {
+			ItemContainer* target = m_Inventory->GetMapContainer(MapPossessions);
+			if (target == nullptr)
+				break;
+
+			uint64 target_bitmask = NOT_USED;
+			if (m_Equipment) { target_bitmask &= m_Inventory->GetEquipmentBitmask(); }
+			if (m_General) { target_bitmask &= m_Inventory->GetGeneralBitmask(); }
+			if (m_Cursor) { target_bitmask &= m_Inventory->GetCursorBitmask(); }
+			if (target_bitmask == NOT_USED) { break; }
+
+			uint16 map_size = m_Inventory->GetMapSize(MapPossessions);
+			for (int16 mainIndex = MAIN_BEGIN; mainIndex < map_size; ++mainIndex) {
+				if ((target_bitmask & (1 << mainIndex)) == NOT_USED) { continue; }
+				if (target->InstanceAt(mainIndex) == nullptr) { continue; }
+
+				ItemInstance* main_instance = target->InstanceAt(mainIndex);
+				if ((!m_IgnoreMain) && check_criteria_(main_instance)) {
+					ItemSlot::Invalidate(m_TestSlot);
+					m_TestSlot.indexMap = MapPossessions;
+					m_TestSlot.indexMain = mainIndex;
+					m_ResultList.push_back(m_TestSlot);
+				}
+
+				if ((!m_IgnoreMainAug) && main_instance->IsClassType(ItemClassCommon)) {
+					ItemContainer* target = main_instance->GetItemContainer();
+					if (target != nullptr) {
+						uint16 aug_size = m_Inventory->GetItemClassSize(ItemClassCommon);
+						for (int16 augIndex = AUG_BEGIN; augIndex < aug_size; ++augIndex) {
+							if (target->InstanceAt(augIndex) == nullptr)
+								continue;
+
+							ItemInstance* aug_instance = target->InstanceAt(augIndex);
+							if (check_criteria_(aug_instance)) {
+								ItemSlot::Invalidate(m_TestSlot);
+								m_TestSlot.indexMap = MapPossessions;
+								m_TestSlot.indexMain = mainIndex;
+								m_TestSlot.indexAug = augIndex;
+								m_ResultList.push_back(m_TestSlot);
+							}
+						}
+					}
+				}
+
+				if (main_instance->IsClassType(ItemClassContainer)) {
+					ItemContainer* target = main_instance->GetItemContainer();
+					if (target != nullptr) {
+						uint16 sub_size = m_Inventory->GetItemClassSize(ItemClassContainer);
+						uint16 bag_slots = main_instance->GetItemData()->BagSlots;
+						for (int16 subIndex = SUB_BEGIN; (subIndex < sub_size) && (subIndex < bag_slots); ++subIndex) {
+							if (target->InstanceAt(subIndex) == nullptr)
+								continue;
+
+							ItemInstance* sub_instance = target->InstanceAt(subIndex);
+							if ((!m_IgnoreSub) && check_criteria_(sub_instance)) {
+								ItemSlot::Invalidate(m_TestSlot);
+								m_TestSlot.indexMap = MapPossessions;
+								m_TestSlot.indexMain = mainIndex;
+								m_TestSlot.indexSub = subIndex;
+								m_ResultList.push_back(m_TestSlot);
+							}
+
+							if ((!m_IgnoreSubAug) && sub_instance->IsClassType(ItemClassCommon)) {
+								ItemContainer* target = sub_instance->GetItemContainer();
+								if (target != nullptr) {
+									uint16 aug_size = m_Inventory->GetItemClassSize(ItemClassCommon);
+									for (int16 augIndex = AUG_BEGIN; augIndex < aug_size; ++augIndex) {
+										if (target->InstanceAt(augIndex) == nullptr)
+											continue;
+
+										ItemInstance* aug_instance = target->InstanceAt(augIndex);
+										if (check_criteria_(aug_instance)) {
+											ItemSlot::Invalidate(m_TestSlot);
+											m_TestSlot.indexMap = MapPossessions;
+											m_TestSlot.indexMain = mainIndex;
+											m_TestSlot.indexSub = subIndex;
+											m_TestSlot.indexAug = augIndex;
+											m_ResultList.push_back(m_TestSlot);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			break;
+		}
+	}
+
+	for (int16 mapIndex = MAP_BEGIN; mapIndex < _MapCount; ++mapIndex) {
+		if (mapIndex == MapPossessions) { continue; }
+		if (!m_Locations[mapIndex]) { continue; }
+
+		ItemContainer* target = m_Inventory->GetMapContainer(mapIndex);
+		if (target == nullptr)
+			continue;
+
+		uint16 map_size = m_Inventory->GetMapSize(mapIndex);
+		for (int16 mainIndex = MAIN_BEGIN; mainIndex < map_size; ++mainIndex) {
+			if (target->InstanceAt(mainIndex) == nullptr)
+				continue;
+
+			ItemInstance* main_instance = target->InstanceAt(mainIndex);
+			if ((!m_IgnoreMain) && check_criteria_(main_instance)) {
+				ItemSlot::Invalidate(m_TestSlot);
+				m_TestSlot.indexMap = mapIndex;
+				m_TestSlot.indexMain = mainIndex;
+				m_ResultList.push_back(m_TestSlot);
+			}
+
+			if ((!m_IgnoreMainAug) && main_instance->IsClassType(ItemClassCommon)) {
+				ItemContainer* target = main_instance->GetItemContainer();
+				if (target != nullptr) {
+					uint16 aug_size = m_Inventory->GetItemClassSize(ItemClassCommon);
+					for (int16 augIndex = AUG_BEGIN; augIndex < aug_size; ++augIndex) {
+						if (target->InstanceAt(augIndex) == nullptr)
+							continue;
+
+						ItemInstance* aug_instance = target->InstanceAt(augIndex);
+						if (check_criteria_(aug_instance)) {
+							ItemSlot::Invalidate(m_TestSlot);
+							m_TestSlot.indexMap = mapIndex;
+							m_TestSlot.indexMain = mainIndex;
+							m_TestSlot.indexAug = augIndex;
+							m_ResultList.push_back(m_TestSlot);
+						}
+					}
+				}
+			}
+
+			if (main_instance->IsClassType(ItemClassContainer)) {
+				ItemContainer* target = main_instance->GetItemContainer();
+				if (target != nullptr) {
+					uint16 sub_size = m_Inventory->GetItemClassSize(ItemClassContainer);
+					uint16 bag_slots = main_instance->GetItemData()->BagSlots;
+					for (int16 subIndex = SUB_BEGIN; (subIndex < sub_size) && (subIndex < bag_slots); ++subIndex) {
+						if (target->InstanceAt(subIndex) == nullptr)
+							continue;
+
+						ItemInstance* sub_instance = target->InstanceAt(subIndex);
+						if ((!m_IgnoreSub) && check_criteria_(sub_instance)) {
+							ItemSlot::Invalidate(m_TestSlot);
+							m_TestSlot.indexMap = mapIndex;
+							m_TestSlot.indexMain = mainIndex;
+							m_TestSlot.indexSub = subIndex;
+							m_ResultList.push_back(m_TestSlot);
+						}
+
+						if ((!m_IgnoreSubAug) && sub_instance->IsClassType(ItemClassCommon)) {
+							ItemContainer* target = sub_instance->GetItemContainer();
+							if (target != nullptr) {
+								uint16 aug_size = m_Inventory->GetItemClassSize(ItemClassCommon);
+								for (int16 augIndex = AUG_BEGIN; augIndex < aug_size; ++augIndex) {
+									if (target->InstanceAt(augIndex) == nullptr)
+										continue;
+
+									ItemInstance* aug_instance = target->InstanceAt(augIndex);
+									if (check_criteria_(aug_instance)) {
+										ItemSlot::Invalidate(m_TestSlot);
+										m_TestSlot.indexMap = mapIndex;
+										m_TestSlot.indexMain = mainIndex;
+										m_TestSlot.indexSub = subIndex;
+										m_TestSlot.indexAug = augIndex;
+										m_ResultList.push_back(m_TestSlot);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+bool HasItemQuery::check_criteria_(ItemInstance* testInstance)
+{
+	if (testInstance == nullptr)
+		return false;
+	
+	// TODO: write criteria check
+	// if (testInstance{...} == <criteria>) { return true; }
+
+	switch (m_Type) {
+	case HIQTNone:
+	default:
+		break;
+	}
+
+	return false;
 }
 
 
@@ -509,9 +763,32 @@ MobInventory::~MobInventory()
 	// TODO: in-work
 }
 
+uint16 MobInventory::GetMapSize(int16 mapIndex)
+{
+	if ((uint16)mapIndex >= _MapCount)
+		return NOT_USED;
+	return m_MapSize[mapIndex];
+}
+
+uint16 MobInventory::GetItemClassSize(ItemClassTypes itemClass)
+{
+	if (itemClass >= _ItemClassCount)
+		return NOT_USED;
+	return m_ItemClassSize[itemClass];
+}
+
 MobInventory::MobInventory()
 {
 	// TODO: in-work
+}
+
+ItemContainer* MobInventory::GetMapContainer(int16 mapIndex)
+{
+	if ((uint16)mapIndex >= _MapCount)
+		return nullptr;
+	if (m_Containers[mapIndex])
+		return m_Containers[mapIndex];
+	return nullptr;
 }
 
 

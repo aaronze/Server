@@ -58,9 +58,10 @@ typedef std::list<ItemSlot_Struct> iresultlist;
 //
 class ItemContainer
 {
-	friend class Object;
+	friend class HasItemQuery;
 	friend class MobInventory;
 	friend class MobInventoryFactory;
+	friend class Object;
 
 public:
 	~ItemContainer();
@@ -94,6 +95,30 @@ protected:
 
 private:
 	ivector m_Bucket;
+};
+
+
+//
+// class ItemInstance
+//
+class ItemInstance
+{
+	friend class HasItemQuery;
+
+public:
+
+	const Item_Struct* GetItemData() const { return m_ItemData; }
+
+	bool IsClassType(ItemClassTypes itemClass) { return (m_ItemData->ItemClass == itemClass); }
+	bool IsUseType(ItemUseTypes itemUse) { return (m_ItemData->ItemType == itemUse); }
+
+protected:
+
+	ItemContainer* GetItemContainer() { return m_ItemContainer; }
+
+private:
+	const Item_Struct* m_ItemData;
+	ItemContainer* m_ItemContainer;
 };
 
 
@@ -165,48 +190,11 @@ enum HIQueryTypes
 {
 	HIQTNone = 0,
 	HIQTExtant,
-	HIQTItemID
-};
-
-enum HIQueryLocations
-{
-	// nowhere
-	HIQLNowhere = 0x00000000,
-	// possessions segment-based
-	HIQLEquipment = 0x00000001,
-	HIQLGeneral = 0x00000002,
-	HIQLCursor = 0x00000004,
-	// map-based
-	HIQLPossessions = 0x00000007,
-	HIQLBank = 0x00000008,
-	HIQLSharedBank = 0x00000010,
-	HIQLTrade = 0x00000020,
-	HIQLWorld = 0x00000040,
-	HIQLLimbo = 0x00000080,
-	HIQLTribute = 0x00000100,
-	HIQLTrophyTribute = 0x00000200,
-	HIQLGuildTribute = 0x00000400,
-	HIQLMerchant = 0x00000800,
-	HIQLDeleted = 0x00001000,
-	HIQLCorpse = 0x00002000,
-	HIQLBazaar = 0x00004000,
-	HIQLInspect = 0x00008000,
-	HIQLRealEstate = 0x00010000,
-	HIQLViewMODPC = 0x00020000,
-	HIQLViewMODBank = 0x00040000,
-	HIQLViewMODSharedBank = 0x00080000,
-	HIQLViewMODLimbo = 0x00100000,
-	HIQLAltStorage = 0x00200000,
-	HIQLArchived = 0x00400000,
-	HIQLMail = 0x00800000,
-	HIQLGuildTrophyTribute = 0x01000000,
-	HIQLKrono = 0x02000000,
-	HIQLOther = 0x04000000,
-	// range-based
-	HIQLConstant = 0x00000000, // double-check..likely {possessions, bank, sharedbank, tribute (, others?)}
-	HIQLAllBank = 0x00000018,
-	HIQLLegacy = 0x00000000, // {worn, personal, bank, sharedbank, trading, cursor} - may do with just HIQLConstant
-	HIQLEverywhere = 0xFFFFFFFF
+	HIQTItemID,
+	HIQTLore,
+	HIQTLoreGroup,
+	HIQTTemporary,
+	HIQTTradeable
 };
 
 
@@ -219,28 +207,52 @@ public:
 	HasItemQuery();
 	~HasItemQuery();
 
-	void Inventory(MobInventory* queryInventory) { m_Inventory = queryInventory; }
-	void Type(uint8 queryType) { m_Type = queryType; }
-	void Locations(uint32 queryLocations) { m_Locations = queryLocations; }
+	void SetInventory(MobInventory* queryInventory) { m_Inventory = queryInventory; }
+	void SetType(HIQueryTypes queryType) { m_Type = queryType; }
+	void FlagMap(InventoryMapTypes mapIndex);
+	void FlagEquipment();
+	void FlagGeneral();
+	void FlagCursor();
+	void FlagDefault();
+	void IgnoreMain() { m_IgnoreMain = true; }
+	void IgnoreSub() { m_IgnoreSub = true; }
+	void IgnoreMainAug() { m_IgnoreMainAug = true; }
+	void IgnoreSubAug() { m_IgnoreSubAug = true; }
 
-	MobInventory* Inventory() { return m_Inventory; }
-	uint8 Type() { return m_Type; }
-	uint32 Locations() { return m_Locations; }
+	// TODO: add additional flag and criteria accessors
 
 	void Execute();
 
 	iresultlist* ResultList() { return &m_ResultList; }
+	iresultlist::iterator begin() { return m_ResultList.begin(); }
+	iresultlist::iterator end() { return m_ResultList.end(); }
 
-	bool Success() { return m_Success; }
+	bool Found() { return m_Found; }
+	size_t Count() { return m_ResultList.size(); }
 
 private:
+	void execute_();
+	bool check_criteria_(ItemInstance* testInstance);
+
 	MobInventory* m_Inventory;
-	uint8 m_Type;
-	uint32 m_Locations;
+	HIQueryTypes m_Type;
+	bool m_Locations[_MapCount];
+	bool m_Equipment;
+	bool m_General;
+	bool m_Cursor;
+	bool m_LocationSet;
+	bool m_IgnoreMain;
+	bool m_IgnoreSub;
+	bool m_IgnoreMainAug;
+	bool m_IgnoreSubAug;
+
+	// TODO: add additional flag and criteria properties
+
+	ItemSlot_Struct m_TestSlot;
 
 	iresultlist m_ResultList;
 	iresultlist* m_ExternalList;
-	bool m_Success;
+	bool m_Found;
 };
 
 
@@ -258,8 +270,17 @@ public:
 
 	~MobInventory();
 
+	uint16 GetMapSize(int16 mapIndex);
+	uint64 GetPossessionsBitmask() { return m_PossessionsBitmask; }
+	uint64 GetEquipmentBitmask() { return m_EquipmentBitmask; }
+	uint64 GetGeneralBitmask() { return m_GeneralBitmask; }
+	uint64 GetCursorBitmask() { return m_CursorBitmask; }
+	uint16 GetItemClassSize(ItemClassTypes itemClass);
+
 protected:
 	MobInventory();
+
+	ItemContainer* GetMapContainer(int16 mapIndex);
 
 private:
 	uint16 m_MapSize[_MapCount];
