@@ -189,12 +189,18 @@ private:
 enum HIQueryTypes
 {
 	HIQTNone = 0,
+	HIQTPointer,
+	HIQTSerialNumber,
 	HIQTExtant,
 	HIQTItemID,
 	HIQTLore,
 	HIQTLoreGroup,
 	HIQTTemporary,
-	HIQTTradeable
+	HIQTNotTemporary,
+	HIQTTradeable,
+	HIQTNotTradeable,
+	HIQTPetable,
+	HIQTNotPetable
 };
 
 
@@ -204,11 +210,17 @@ enum HIQueryTypes
 class HasItemQuery
 {
 public:
-	HasItemQuery();
+	HasItemQuery() { ResetCriteria(); }
 	~HasItemQuery();
 
+	void ResetCriteria();
+
+	void SetQuantity(size_t queryQuantity) { m_Quantity = queryQuantity; }
+	size_t QuantityFound() { return m_QuantityFound; }
+
+	// full-scope methods
 	void SetInventory(MobInventory* queryInventory) { m_Inventory = queryInventory; }
-	void SetType(HIQueryTypes queryType) { m_Type = queryType; }
+
 	void FlagMap(InventoryMapTypes mapIndex);
 	void FlagEquipment();
 	void FlagGeneral();
@@ -219,8 +231,6 @@ public:
 	void IgnoreMainAug() { m_IgnoreMainAug = true; }
 	void IgnoreSubAug() { m_IgnoreSubAug = true; }
 
-	// TODO: add additional flag and criteria accessors
-
 	void Execute();
 
 	iresultlist* ResultList() { return &m_ResultList; }
@@ -229,13 +239,40 @@ public:
 
 	bool Found() { return m_Found; }
 	size_t Count() { return m_ResultList.size(); }
+	void Clear() { m_ResultList.clear(); }
+
+	// limited-scope methods
+	void SetContainer(ItemContainer* queryContainer) { m_Container = queryContainer; }
+	void SetContainerSize(size_t queryContainerSize) { m_ContainerSize = queryContainerSize; }
+
+	void ExecuteContainer();
+
+	std::list<int16>* ContainerResultList() { return &m_ContainerResultList; }
+	std::list<int16>::iterator container_begin() { return m_ContainerResultList.begin(); }
+	std::list<int16>::iterator container_end() { return m_ContainerResultList.end(); }
+
+	bool ContainerFound() { return m_ContainerFound; }
+	size_t ContainerCount() { return m_ContainerResultList.size(); }
+	void ContainerClear() { m_ContainerResultList.clear(); }
+
+	// common criteria methods
+	void SetType(HIQueryTypes queryType) { m_Type = queryType; }
+
+	void SetItemID(uint32 itemID) { m_ItemID = itemID; }
+	void SetLoreGroup(uint32 loreGroup) { m_LoreGroup = loreGroup; }
+
+	// TODO: add additional flag and criteria accessors
 
 private:
 	void execute_();
+	void execute_container_();
+	bool validate_criteria_();
 	bool check_criteria_(ItemInstance* testInstance);
 
 	MobInventory* m_Inventory;
-	HIQueryTypes m_Type;
+	ItemContainer* m_Container;
+	size_t m_ContainerSize;
+
 	bool m_Locations[_MapCount];
 	bool m_Equipment;
 	bool m_General;
@@ -246,13 +283,25 @@ private:
 	bool m_IgnoreMainAug;
 	bool m_IgnoreSubAug;
 
-	// TODO: add additional flag and criteria properties
+	HIQueryTypes m_Type;
+	size_t m_Quantity;
+	size_t m_QuantityFound;
+	ItemSlot_Struct m_SlotFound;
 
-	ItemSlot_Struct m_TestSlot;
+	ItemInstance* m_Pointer;
+	int32 m_SerialNumber; // check on int32 vs uint32
+	uint32 m_ItemID;
+	uint32 m_LoreGroup;
+
+	// TODO: add additional flag and criteria properties
 
 	iresultlist m_ResultList;
 	iresultlist* m_ExternalList;
 	bool m_Found;
+
+	std::list<int16> m_ContainerResultList;
+	std::list<int16> m_ContainerWorkingList;
+	bool m_ContainerFound;
 };
 
 
