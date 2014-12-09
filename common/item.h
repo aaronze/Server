@@ -107,17 +107,37 @@ class ItemInstance
 
 public:
 
+	uint32 GetSerialNumber() { return m_SerialNumber; }
+	int16 GetCharges() { return m_Charges; }
+
 	const Item_Struct* GetItemData() const { return m_ItemData; }
 
-	bool IsClassType(ItemClassTypes itemClass) { return (m_ItemData->ItemClass == itemClass); }
-	bool IsUseType(ItemUseTypes itemUse) { return (m_ItemData->ItemType == itemUse); }
+	bool IsClassType(uint8 itemClass) { return (m_ItemData->ItemClass == itemClass); }
+	bool IsUseType(uint8 itemUse) { return (m_ItemData->ItemType == itemUse); }
+	bool IsAugmentType(uint32 augmentType) { return (m_ItemData->AugType == augmentType); } // double-check if value is single- or multi-bit..may need bit-wise '&' (may need ItemClassCommon check)
+	bool IsBagType(uint8 bagType) { return (IsClassType(ItemClassContainer) && (m_ItemData->BagType == bagType)); }
 
+	uint32 GetItemID() { return m_ItemData->ID; }
+	bool IsStackable() { return m_ItemData->Stackable; }
+
+	bool IsTemporary() { return (m_ItemData->NoRent == 0); }
+	bool IsTradeable() { return (m_ItemData->NoDrop != 0); }
+	bool IsPetable() { return (m_ItemData->NoPet == 0); }
+	bool IsTransferable() { return (m_ItemData->NoTransfer == 0); }
+	//bool IsStorable() { return (m_ItemData->NoStorage == 0); } // not implemented yet
+	
 protected:
 
 	ItemContainer* GetItemContainer() { return m_ItemContainer; }
 
 private:
+	int32 m_SerialNumber;
+	int16 m_Charges;
+
+
 	const Item_Struct* m_ItemData;
+
+
 	ItemContainer* m_ItemContainer;
 };
 
@@ -189,9 +209,9 @@ private:
 enum HIQueryTypes
 {
 	HIQTNone = 0,
+	HIQTExtant,
 	HIQTPointer,
 	HIQTSerialNumber,
-	HIQTExtant,
 	HIQTItemID,
 	HIQTLore,
 	HIQTLoreGroup,
@@ -200,7 +220,15 @@ enum HIQueryTypes
 	HIQTTradeable,
 	HIQTNotTradeable,
 	HIQTPetable,
-	HIQTNotPetable
+	HIQTNotPetable,
+	HIQTTransferable,
+	HIQTNotTransferable,
+	HIQTStorable,
+	HIQTNotStorable,
+	HIQTItemClass,
+	HIQTItemUse,
+	HIQTAugmentType,
+	HIQTBagType
 };
 
 
@@ -260,6 +288,10 @@ public:
 
 	void SetItemID(uint32 itemID) { m_ItemID = itemID; }
 	void SetLoreGroup(uint32 loreGroup) { m_LoreGroup = loreGroup; }
+	void SetItemClass(uint8 itemClass) { m_ItemClass = (itemClass + 1); }	// 0 is a valid entry..offset is used to indicate a value has been set
+	void SetItemUse(uint8 itemUse) { m_ItemUse = (itemUse + 1); }			// 0 is a valid entry..offset is used to indicate a value has been set
+	void SetAugmentType(uint32 augmentType) { m_AugmentType = m_AugmentType; }
+	void SetBagType(uint8 bagType) { m_BagType = (bagType + 1); }			// 0 is a valid entry..offset is used to indicate a value has been set
 
 	// TODO: add additional flag and criteria accessors
 
@@ -289,9 +321,14 @@ private:
 	ItemSlot_Struct m_SlotFound;
 
 	ItemInstance* m_Pointer;
-	int32 m_SerialNumber; // check on int32 vs uint32
+	uint32 m_SerialNumber;
 	uint32 m_ItemID;
 	uint32 m_LoreGroup;
+
+	uint8 m_ItemClass;
+	uint8 m_ItemUse;
+	uint32 m_AugmentType;
+	uint8 m_BagType;
 
 	// TODO: add additional flag and criteria properties
 

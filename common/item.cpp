@@ -495,6 +495,10 @@ void HasItemQuery::ResetCriteria()
 	m_SerialNumber = NOT_USED;
 	m_ItemID = NOT_USED;
 	m_LoreGroup = NOT_USED;
+	m_ItemClass = NOT_USED;
+	m_ItemUse = NOT_USED;
+	m_AugmentType = NOT_USED;
+	m_BagType = NOT_USED;
 
 	m_ExternalList = nullptr;
 	m_Found = false;
@@ -698,6 +702,8 @@ bool HasItemQuery::validate_criteria_()
 	switch (m_Type) {
 	case HIQTNone:
 		break;
+	case HIQTExtant:
+		return true;
 	case HIQTPointer:
 		if (m_Pointer != nullptr) {
 			m_Quantity = 1;
@@ -710,17 +716,13 @@ bool HasItemQuery::validate_criteria_()
 			return true;
 		}
 		break;
-	case HIQTExtant:
-		return true;
 	case HIQTItemID:
-		if (m_ItemID != NOT_USED)
-			return true;
+		if (m_ItemID != NOT_USED) { return true; }
 		break;
 	case HIQTLore:
 		return true;
 	case HIQTLoreGroup:
-		if (m_LoreGroup != NOT_USED)
-			return true;
+		if (m_LoreGroup != NOT_USED) { return true; }
 		break;
 	case HIQTTemporary:
 		return true;
@@ -734,6 +736,35 @@ bool HasItemQuery::validate_criteria_()
 		return true;
 	case HIQTNotPetable:
 		return true;
+	case HIQTTransferable:
+		return true;
+	case HIQTNotTransferable:
+		return true;
+	case HIQTStorable:
+		return false; // change to true when implemented
+	case HIQTNotStorable:
+		return false; // change to true when implemented
+	case HIQTItemClass:
+		if (m_ItemClass != NOT_USED) {
+			m_ItemClass -= 1;
+			return true;
+		}
+		break;
+	case HIQTItemUse:
+		if (m_ItemUse != NOT_USED) {
+			m_ItemUse -= 1;
+			return true;
+		}
+		break;
+	case HIQTAugmentType:
+		if (m_AugmentType != NOT_USED) { return true; }
+		break;
+	case HIQTBagType:
+		if (m_BagType != NOT_USED) {
+			m_BagType -= 1;
+			return true;
+		}
+		break;
 	default:
 		break;
 	}
@@ -746,79 +777,79 @@ bool HasItemQuery::check_criteria_(ItemInstance* testInstance)
 	if (testInstance == nullptr)
 		return false;
 	
+	bool criteria_met = false;
+	
 	switch (m_Type) {
 	case HIQTNone:
 		break;
+	case HIQTExtant:
+		criteria_met = true;
+		break;
 	case HIQTPointer:
-		if (testInstance == m_Pointer)
-			return true;
+		if (testInstance == m_Pointer) { criteria_met = true; }
 		break;
 	case HIQTSerialNumber:
-		//if (testInstance->GetSerialNumber() == m_SerialNumber)
-		//	return true;
+		if (testInstance->GetSerialNumber() == m_SerialNumber) { criteria_met = true; }
 		break;
-	case HIQTExtant:
-		//m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		return true;
 	case HIQTItemID:
-		//if (testInstance->GetID() == m_ItemID) {
-		//	m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		//	return true;
-		//}
+		if (testInstance->GetItemID() == m_ItemID) { criteria_met = true; }
 		break;
 	case HIQTLore:
-		if (testInstance->GetItemData()->LoreFlag == true) {
-			//m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-			return true;
-		}
+		if (testInstance->GetItemData()->LoreFlag == true) { criteria_met = true; }
 		break;
 	case HIQTLoreGroup:
-		if (testInstance->GetItemData()->LoreGroup == m_LoreGroup) {
-			//m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-			return true;
-		}
+		if (testInstance->GetItemData()->LoreGroup == m_LoreGroup) { criteria_met = true; }
 		break;
 	case HIQTTemporary:
-		//if (testInstance->IsTemporary()) {
-		//	m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		//	return true;
-		//}
+		if (testInstance->IsTemporary()) { criteria_met = true; }
 		break;
 	case HIQTNotTemporary:
-		//if (!testInstance->IsTemporary()) {
-		//	m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		//	return true;
-		//}
+		if (!testInstance->IsTemporary()) { criteria_met = true; }
 		break;
 	case HIQTTradeable:
-		//if (testInstance->IsTradeable()) {
-		//	m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		//	return true;
-		//}
+		if (testInstance->IsTradeable()) { criteria_met = true; }
 		break;
 	case HIQTNotTradeable:
-		//if (!testInstance->IsTradeable()) {
-		//	m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		//	return true;
-		//}
+		if (!testInstance->IsTradeable()) { criteria_met = true; }
 		break;
 	case HIQTPetable:
-		//if (testInstance->IsPetable()) {
-		//	m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		//	return true;
-		//}
+		if (testInstance->IsPetable()) { criteria_met = true; }
 		break;
 	case HIQTNotPetable:
-		//if (!testInstance->IsPetable()) {
-		//	m_QuantityFound += testInstance->IsStackable() ? testInstance->GetQuantity() : 1;
-		//	return true;
-		//}
+		if (!testInstance->IsPetable()) { criteria_met = true; }
+		break;
+	case HIQTTransferable:
+		if (testInstance->IsTransferable()) { criteria_met = true; }
+		break;
+	case HIQTNotTransferable:
+		if (!testInstance->IsTransferable()) { criteria_met = true; }
+		break;
+	case HIQTStorable:
+		//if (testInstance->IsStorable()) { criteria_met = true; } // enable when implemented
+		break;
+	case HIQTNotStorable:
+		//if (!testInstance->IsStorable()) { criteria_met = true; } // enable when implemented
+		break;
+	case HIQTItemClass:
+		if (testInstance->IsClassType(m_ItemClass)) { criteria_met = true; }
+		break;
+	case HIQTItemUse:
+		if (testInstance->IsUseType(m_ItemUse)) { criteria_met = true; }
+		break;
+	case HIQTAugmentType:
+		if (testInstance->IsAugmentType(m_AugmentType)) { criteria_met = true; }
+		break;
+	case HIQTBagType:
+		if (testInstance->IsBagType(m_BagType)) { criteria_met = true; }
 		break;
 	default:
 		break;
 	}
 
-	return false;
+	if (criteria_met == true)
+		m_QuantityFound += testInstance->IsStackable() ? testInstance->GetCharges() : 1;
+
+	return criteria_met;
 }
 
 
