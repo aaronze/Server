@@ -412,6 +412,102 @@ bool ItemSlot::IsNotEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlotShort_S
 	return true;
 }
 
+void ItemSlot::GetOwningSlot(ItemSlot_Struct& owningSlotStruct, ItemSlot_Struct& itemSlotStruct)
+{
+	if (ItemSlot::IsSub(itemSlotStruct)) {
+		ItemSlot::CopySlot(owningSlotStruct, itemSlotStruct);
+		owningSlotStruct.indexSub = INVALID_INDEX;
+	}
+	else if (ItemSlot::IsMainAug(itemSlotStruct) || ItemSlot::IsSubAug(itemSlotStruct)) {
+		ItemSlot::CopySlot(owningSlotStruct, itemSlotStruct);
+		owningSlotStruct.indexAug = INVALID_INDEX;
+	}
+	else {
+		ItemSlot::Invalidate(owningSlotStruct);
+	}
+}
+
+void ItemSlot::GetOwningSlot(ItemSlotShort_Struct& owningSlotStruct, ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (ItemSlot::IsSub(itemSlotStruct)) {
+		ItemSlot::CopySlot(owningSlotStruct, itemSlotStruct);
+		owningSlotStruct.indexSub = INVALID_INDEX;
+	}
+	else if (ItemSlot::IsMainAug(itemSlotStruct) || ItemSlot::IsSubAug(itemSlotStruct)) {
+		ItemSlot::CopySlot(owningSlotStruct, itemSlotStruct);
+		owningSlotStruct.indexAug = INVALID_INDEX;
+	}
+	else {
+		ItemSlot::Invalidate(owningSlotStruct);
+	}
+}
+
+void ItemSlot::GetTopSlot(ItemSlot_Struct& topSlotStruct, ItemSlot_Struct& itemSlotStruct)
+{
+	if (ItemSlot::IsSub(itemSlotStruct) || ItemSlot::IsMainAug(itemSlotStruct) || ItemSlot::IsSubAug(itemSlotStruct)) {
+		ItemSlot::CopySlot(topSlotStruct, itemSlotStruct);
+		topSlotStruct.indexSub = INVALID_INDEX;
+		topSlotStruct.indexAug = INVALID_INDEX;
+	}
+	else {
+		ItemSlot::Invalidate(topSlotStruct);
+	}
+}
+
+void ItemSlot::GetTopSlot(ItemSlotShort_Struct& topSlotStruct, ItemSlotShort_Struct& itemSlotStruct)
+{
+	if (ItemSlot::IsSub(itemSlotStruct) || ItemSlot::IsMainAug(itemSlotStruct) || ItemSlot::IsSubAug(itemSlotStruct)) {
+		ItemSlot::CopySlot(topSlotStruct, itemSlotStruct);
+		topSlotStruct.indexSub = INVALID_INDEX;
+		topSlotStruct.indexAug = INVALID_INDEX;
+	}
+	else {
+		ItemSlot::Invalidate(topSlotStruct);
+	}
+}
+
+void CopySlot(ItemSlot_Struct& copySlotStruct, ItemSlot_Struct& itemSlotStruct)
+{
+	copySlotStruct.indexMap = itemSlotStruct.indexMap;
+	copySlotStruct.unknown02 = itemSlotStruct.unknown02;
+	copySlotStruct.indexMain = itemSlotStruct.indexMain;
+	copySlotStruct.indexSub = itemSlotStruct.indexSub;
+	copySlotStruct.indexAug = itemSlotStruct.indexAug;
+	copySlotStruct.unknown01 = itemSlotStruct.unknown01;
+}
+
+void CopySlot(ItemSlotShort_Struct& copySlotStruct, ItemSlotShort_Struct& itemSlotStruct)
+{
+	copySlotStruct.indexMain = itemSlotStruct.indexMain;
+	copySlotStruct.indexSub = itemSlotStruct.indexSub;
+	copySlotStruct.indexAug = itemSlotStruct.indexAug;
+	copySlotStruct.unknown01 = itemSlotStruct.unknown01;
+}
+
+void ItemSlot::GetOwningSlot(ItemSlot_Struct& owningSlotStruct)
+{
+	ItemSlot::GetOwningSlot(owningSlotStruct, m_ItemSlotStruct);
+}
+
+void ItemSlot::GetOwningSlot(ItemSlotShort_Struct& owningSlotStruct)
+{
+	ItemSlotShort_Struct local_struct;
+	GetItemSlot(local_struct);
+	ItemSlot::GetOwningSlot(owningSlotStruct, local_struct);
+}
+
+void ItemSlot::GetTopSlot(ItemSlot_Struct& topSlotStruct)
+{
+	ItemSlot::GetTopSlot(topSlotStruct, m_ItemSlotStruct);
+}
+
+void ItemSlot::GetTopSlot(ItemSlotShort_Struct& topSlotStruct)
+{
+	ItemSlotShort_Struct local_struct;
+	GetItemSlot(local_struct);
+	ItemSlot::GetTopSlot(topSlotStruct, local_struct);
+}
+
 void ItemSlot::GetItemSlot(ItemSlot_Struct& itemSlotStruct)
 {
 	itemSlotStruct.indexMap = m_ItemSlotStruct.indexMap;

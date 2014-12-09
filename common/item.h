@@ -174,6 +174,15 @@ public:
 	static bool IsNotEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlot_Struct& itemSlotStruct2);
 	static bool IsNotEqual(ItemSlotShort_Struct& itemSlotStruct1, ItemSlotShort_Struct& itemSlotStruct2);
 
+	static void GetOwningSlot(ItemSlot_Struct& owningSlotStruct, ItemSlot_Struct& itemSlotStruct);
+	static void GetOwningSlot(ItemSlotShort_Struct& owningSlotStruct, ItemSlotShort_Struct& itemSlotStruct);
+
+	static void GetTopSlot(ItemSlot_Struct& topSlotStruct, ItemSlot_Struct& itemSlotStruct);
+	static void GetTopSlot(ItemSlotShort_Struct& topSlotStruct, ItemSlotShort_Struct& itemSlotStruct);
+
+	static void CopySlot(ItemSlot_Struct& copySlotStruct, ItemSlot_Struct& itemSlotStruct);				// check to see if direct assignment will copy properly
+	static void CopySlot(ItemSlotShort_Struct& copySlotStruct, ItemSlotShort_Struct& itemSlotStruct);	// check to see if direct assignment will copy properly
+
 	// local methods
 	void Invalidate() { ItemSlot::Invalidate(m_ItemSlotStruct); }
 
@@ -188,6 +197,12 @@ public:
 	bool IsEqual(ItemSlotShort_Struct& itemSlotStruct) { return ItemSlot::IsEqual(m_ItemSlotStruct, itemSlotStruct); }
 	bool IsNotEqual(ItemSlot_Struct& itemSlotStruct) { return ItemSlot::IsNotEqual(m_ItemSlotStruct, itemSlotStruct); }
 	bool IsNotEqual(ItemSlotShort_Struct& itemSlotStruct) { return ItemSlot::IsNotEqual(m_ItemSlotStruct, itemSlotStruct); }
+
+	void GetOwningSlot(ItemSlot_Struct& owningSlotStruct);
+	void GetOwningSlot(ItemSlotShort_Struct& owningSlotStruct);
+
+	void GetTopSlot(ItemSlot_Struct& topSlotStruct);
+	void GetTopSlot(ItemSlotShort_Struct& topSlotStruct);
 
 	void GetItemSlot(ItemSlot_Struct& itemSlotStruct);
 	void GetItemSlot(ItemSlotShort_Struct& itemSlotStruct);
