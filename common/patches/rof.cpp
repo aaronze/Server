@@ -2315,10 +2315,11 @@ namespace RoF
 		outapp->WriteUInt8(emu->gm);
 
 		outapp->WriteUInt32(emu->guild_id);
-		outapp->WriteUInt8(0);				// Unknown - observed 1 in a live packet.
-		outapp->WriteUInt32(0);				// Unknown - observed 1 in a live packet.
-		outapp->WriteUInt8(0);				// Unknown - observed 1 in a live packet.
-		outapp->WriteUInt32(0);				// Unknown
+
+		outapp->WriteUInt8(emu->guildrank);	// guildrank
+		outapp->WriteUInt32(0);				// Unknown - Seen 0 on Live
+		outapp->WriteUInt8(0);				// Unknown - Seen 1 on Live
+		outapp->WriteUInt32(0);				// Unknown - Seen 7067 on Live
 
 		outapp->WriteUInt64(emu->exp);
 		outapp->WriteUInt8(0);				// Unknown
@@ -4825,7 +4826,7 @@ namespace RoF
 		hdr.slot_type = (merchant_slot == 0) ? slot_id.SlotType : 9; // 9 is merchant 20 is reclaim items?
 		hdr.main_slot = (merchant_slot == 0) ? slot_id.MainSlot : merchant_slot;
 		hdr.sub_slot = (merchant_slot == 0) ? slot_id.SubSlot : 0xffff;
-		hdr.unknown013 = (merchant_slot == 0) ? slot_id.AugSlot : 0xffff;
+		hdr.aug_slot = (merchant_slot == 0) ? slot_id.AugSlot : 0xffff;
 		hdr.price = inst->GetPrice();
 		hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
 		//hdr.merchant_slot = (merchant_slot == 0) ? 1 : 0xffffffff;
@@ -4854,8 +4855,8 @@ namespace RoF
 			ss.write((const char*)&evotop, sizeof(RoF::structs::EvolvingItem));
 		}
 		//ORNAMENT IDFILE / ICON
-		uint16 ornaIcon = 0;
-		int32 heroModel = 0;
+		uint32 ornaIcon = 0;
+		uint32 heroModel = 0;
 		/*
 		if (inst->GetOrnamentationAug(ornamentationAugtype))
 		{
@@ -4896,8 +4897,8 @@ namespace RoF
 
 		RoF::structs::ItemSerializationHeaderFinish hdrf;
 		hdrf.ornamentIcon = ornaIcon;
-		hdrf.unknown061 = 0;
-		hdrf.unknown062 = 0;
+		//hdrf.unknown061 = 0;
+		//hdrf.unknown062 = 0;
 		hdrf.unknowna1 = 0xffffffff;
 		hdrf.ornamentHeroModel = heroModel;
 		hdrf.unknown063 = 0;

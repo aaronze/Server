@@ -617,6 +617,7 @@ void Client::DropItem(int16 slot_id)
 
 	// Save client inventory change to database
 	if (slot_id == MainCursor) {
+		SummonCursorBuffer();
 		std::list<ItemInst*>::const_iterator s=m_inv.cursor_begin(),e=m_inv.cursor_end();
 		database.SaveCursor(CharacterID(), s, e);
 	} else {
@@ -687,10 +688,21 @@ void Client::SummonCursorBuffer() {
 		if (!GetInv().CursorEmpty())
 		{
 			const ItemInst* inst = GetInv().PopCursor();
-			SummonItem(inst->GetID(), inst->GetCharges(), inst->GetAugmentItemID(0), 
-				inst->GetAugmentItemID(1), inst->GetAugmentItemID(2), inst->GetAugmentItemID(3), 
-				inst->GetAugmentItemID(4), inst->GetAugmentItemID(5), inst->IsAttuned(), MainCursor, 
-				inst->GetOrnamentationIcon(), inst->GetOrnamentationIDFile(), inst->GetOrnamentHeroModel());
+			if (inst)
+			{
+				const Item_Struct* item = inst->GetItem();
+				if (item)
+				{
+					// Debugging RoF+ Cursor Buffer
+					Message(15, "Summoning to Cursor: %s (%i)", item->Name, item->ID);
+				}
+				SummonItem(inst->GetID(), inst->GetCharges(), inst->GetAugmentItemID(0),
+					inst->GetAugmentItemID(1), inst->GetAugmentItemID(2), inst->GetAugmentItemID(3),
+					inst->GetAugmentItemID(4), inst->GetAugmentItemID(5), inst->IsAttuned(), MainCursor,
+					inst->GetOrnamentationIcon(), inst->GetOrnamentationIDFile(), inst->GetOrnamentHeroModel());
+
+				safe_delete(inst);
+			}
 		}
 	}
 }
@@ -1461,7 +1473,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		}
 	}
 
-
 	// Check for No Drop Hacks
 	Mob* with = trade->With();
 	if (((with && with->IsClient() && dst_slot_id >= EmuConstants::TRADE_BEGIN && dst_slot_id <= EmuConstants::TRADE_END) ||
@@ -1698,7 +1709,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	}
 
 	// Step 7: Save change to the database
-	if (src_slot_id == MainCursor){
+	if (src_slot_id == MainCursor)
+	{
 		// If not swapping another item to cursor and stacking items were depleted
 		if (dstitemid == 0 || all_to_stack == true)
 		{
@@ -1706,14 +1718,21 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		}
 		std::list<ItemInst*>::const_iterator s=m_inv.cursor_begin(),e=m_inv.cursor_end();
 		database.SaveCursor(character_id, s, e);
-	} else
+	}
+	else
+	{
 		database.SaveInventory(character_id, m_inv.GetItem(src_slot_id), src_slot_id);
+	}
 
-	if (dst_slot_id == MainCursor) {
+	if (dst_slot_id == MainCursor)
+	{
 		std::list<ItemInst*>::const_iterator s=m_inv.cursor_begin(),e=m_inv.cursor_end();
 		database.SaveCursor(character_id, s, e);
-	} else
+	}
+	else
+	{
 		database.SaveInventory(character_id, m_inv.GetItem(dst_slot_id), dst_slot_id);
+	}
 
 	if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in, true); } // QS Audit
 

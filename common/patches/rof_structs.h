@@ -4391,7 +4391,7 @@ struct ItemSerializationHeader
 /*025*/	uint8  slot_type;	// 0 = normal, 1 = bank, 2 = shared bank, 9 = merchant, 20 = ?
 /*026*/	uint16 main_slot;
 /*028*/ uint16 sub_slot;
-/*030*/ uint16 unknown013;	// 0xffff
+/*030*/ uint16 aug_slot;	// 0xffff
 /*032*/	uint32 price;
 /*036*/	uint32 merchant_slot; //1 if not a merchant item
 /*040*/	uint32 scaled_value; //0
@@ -4420,9 +4420,9 @@ struct EvolvingItem {
 
 struct ItemSerializationHeaderFinish
 {
-/*079*/	uint16 ornamentIcon;
-/*081*/	uint8 unknown061;	// 0 - Add Evolving Item struct if this isn't set to 0?
-/*082*/	uint8 unknown062;	// 0
+/*079*/	uint32 ornamentIcon;
+/*081*/	//uint8 unknown061;	// 0
+/*082*/	//uint8 unknown062;	// 0
 /*083*/	int32 unknowna1;	// 0xffffffff
 /*087*/	uint32 ornamentHeroModel;	// 0
 /*091*/	uint8 unknown063;	// 0
