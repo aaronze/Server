@@ -3111,17 +3111,6 @@ struct MobHealth
 	/*0001*/	uint16	id;//mobs id
 };
 
-struct Track_Struct {
-	uint16 entityid;
-	uint16 padding002;
-	float distance;
-	// Fields for SoD and later
-	uint8 level;
-	uint8 NPC;
-	uint8 GroupMember;
-	char name[64];
-};
-
 struct Tracking_Struct {
 	Track_Struct Entrys[0];
 };
