@@ -3127,19 +3127,9 @@ struct Tracking_Struct {
 	Track_Struct Entrys[0];
 };
 
-// Looks like new tracking structures - Opcode: 0x57a7
-struct Tracking_Struct_New {
-	uint16 totalcount;			// Total Count of mobs within tracking range
-	Track_Struct Entrys[0];
-};
-
-struct Track_Struct_New {
-	uint16 entityid;				// Entity ID
-	uint16 unknown002;			// 00 00
-	uint32 unknown004;			//
-	uint8  level;				// level of mob
-	uint8  unknown009;			// 01 maybe type of mob? player/npc?
-	char  name[1];				// name of mob
+struct TrackTarget_Struct
+{
+	uint32	EntityID;
 };
 
 
