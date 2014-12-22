@@ -3289,7 +3289,7 @@ namespace RoF2
 		int PacketSize = 2;
 
 		for (int i = 0; i < EntryCount; ++i, ++emu)
-			PacketSize += (12 + strlen(emu->name));
+			PacketSize += (13 + strlen(emu->name));
 
 		emu = (Track_Struct *)__emu_buffer;
 
@@ -3304,6 +3304,7 @@ namespace RoF2
 		{
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->entityid);
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->distance);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// Unknown? IsMerc IsPet
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);

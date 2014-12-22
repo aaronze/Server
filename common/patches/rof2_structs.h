@@ -2892,7 +2892,8 @@ struct Resurrect_Struct
 /*160*/	char	corpse_name[64];
 /*224*/	uint32	action;
 /*228*/	uint32	unknown228;
-/*232*/
+/*232*/	uint32	unknown232;
+/*236*/
 };
 
 struct SetRunMode_Struct {
@@ -3112,9 +3113,13 @@ struct MobHealth
 
 struct Track_Struct {
 	uint16 entityid;
-	uint16 y;
-	uint16 x;
-	uint16 z;
+	uint16 padding002;
+	float distance;
+	// Fields for SoD and later
+	uint8 level;
+	uint8 NPC;
+	uint8 GroupMember;
+	char name[64];
 };
 
 struct Tracking_Struct {
