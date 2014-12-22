@@ -115,7 +115,7 @@ namespace RoF
 
 #include "ss_define.h"
 
-// ENCODE methods
+	// ENCODE methods
 	ENCODE(OP_Action)
 	{
 		ENCODE_LENGTH_EXACT(Action_Struct);
@@ -470,7 +470,7 @@ namespace RoF
 			eq->slot = 13;
 		else
 			OUT(slot);
-		
+
 		OUT(spell_id);
 		eq->inventoryslot = ServerToRoFSlot(emu->inventoryslot);
 		//OUT(inventoryslot);
@@ -687,7 +687,7 @@ namespace RoF
 	{
 		SETUP_VAR_ENCODE(ExpeditionCompass_Struct);
 		ALLOC_VAR_ENCODE(structs::ExpeditionCompass_Struct, sizeof(structs::ExpeditionInfo_Struct) + sizeof(structs::ExpeditionCompassEntry_Struct) * emu->count);
-		
+
 		OUT(count);
 
 		for (uint32 i = 0; i < emu->count; ++i)
@@ -868,7 +868,7 @@ namespace RoF
 
 		unsigned char *__emu_buffer = in->pBuffer;
 
-		in->size = strlen(emu->object_name) + sizeof(Object_Struct)-1;
+		in->size = strlen(emu->object_name) + sizeof(Object_Struct) - 1;
 		in->pBuffer = new unsigned char[in->size];
 
 		char *OutBuffer = (char *)in->pBuffer;
@@ -1123,7 +1123,7 @@ namespace RoF
 		if (emu->count > 0) {
 			Internal_GuildMemberEntry_Struct *emu_e = emu->member;
 			const char *emu_name = (const char *)(__emu_buffer +
-				sizeof(Internal_GuildMembers_Struct)+ //skip header
+				sizeof(Internal_GuildMembers_Struct) + //skip header
 				emu->count * sizeof(Internal_GuildMemberEntry_Struct)	//skip static length member data
 				);
 			const char *emu_note = (emu_name +
@@ -1140,12 +1140,12 @@ namespace RoF
 
 				//nice helper macro
 #define SlideStructString(field, str) \
-			{ \
+						{ \
 				int sl = strlen(str); \
 				memcpy(e->field, str, sl+1); \
 				e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 				str += sl + 1; \
-			}
+						}
 #define PutFieldN(field) e->field = htonl(emu_e->field)
 
 				SlideStructString(name, emu_name);
@@ -2315,11 +2315,10 @@ namespace RoF
 		outapp->WriteUInt8(emu->gm);
 
 		outapp->WriteUInt32(emu->guild_id);
-
 		outapp->WriteUInt8(emu->guildrank);	// guildrank
-		outapp->WriteUInt32(0);				// Unknown - Seen 0 on Live
-		outapp->WriteUInt8(0);				// Unknown - Seen 1 on Live
-		outapp->WriteUInt32(0);				// Unknown - Seen 7067 on Live
+		outapp->WriteUInt32(0);				// Unknown - observed 1 in a live packet.
+		outapp->WriteUInt8(0);				// Unknown - observed 1 in a live packet.
+		outapp->WriteUInt32(0);				// Unknown
 
 		outapp->WriteUInt64(emu->exp);
 		outapp->WriteUInt8(0);				// Unknown
@@ -3295,9 +3294,9 @@ namespace RoF
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->entityid);
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->distance);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->is_npc);
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->GroupMember);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->is_merc);
 		}
 
 		delete[] __emu_buffer;
@@ -3540,7 +3539,7 @@ namespace RoF
 	}
 
 	ENCODE(OP_ZoneEntry) { ENCODE_FORWARD(OP_ZoneSpawns); }
-	
+
 	ENCODE(OP_ZonePlayerToBind)
 	{
 		ENCODE_LENGTH_ATLEAST(ZonePlayerToBind_Struct);
@@ -3862,7 +3861,7 @@ namespace RoF
 		delete in;
 	}
 
-// DECODE methods
+	// DECODE methods
 	DECODE(OP_AdventureMerchantSell)
 	{
 		DECODE_LENGTH_EXACT(structs::Adventure_Sell_Struct);
@@ -4012,7 +4011,7 @@ namespace RoF
 			emu->slot = 10;
 		else
 			IN(slot);
-		
+
 		IN(spell_id);
 		emu->inventoryslot = RoFToServerSlot(eq->inventoryslot);
 		//IN(inventoryslot);
@@ -4042,7 +4041,7 @@ namespace RoF
 
 		uint32 Skill = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
 
-		__packet->size = sizeof(ChannelMessage_Struct)+strlen(InBuffer) + 1;
+		__packet->size = sizeof(ChannelMessage_Struct) + strlen(InBuffer) + 1;
 		__packet->pBuffer = new unsigned char[__packet->size];
 		ChannelMessage_Struct *emu = (ChannelMessage_Struct *)__packet->pBuffer;
 
@@ -4508,35 +4507,35 @@ namespace RoF
 
 		// This is a switch on the RaidGeneral action
 		switch (*(uint32 *)__packet->pBuffer) {
-			case 35: { // raidMOTD
-				// we don't have a nice macro for this
-				structs::RaidMOTD_Struct *__eq_buffer = (structs::RaidMOTD_Struct *)__packet->pBuffer;
-				__eq_buffer->motd[1023] = '\0';
-				size_t motd_size = strlen(__eq_buffer->motd) + 1;
-				__packet->size = sizeof(RaidMOTD_Struct) + motd_size;
-				__packet->pBuffer = new unsigned char[__packet->size];
-				RaidMOTD_Struct *emu = (RaidMOTD_Struct *)__packet->pBuffer;
-				structs::RaidMOTD_Struct *eq = (structs::RaidMOTD_Struct *)__eq_buffer;
-				strn0cpy(emu->general.player_name, eq->general.player_name, 64);
-				strn0cpy(emu->motd, eq->motd, motd_size);
-				IN(general.action);
-				IN(general.parameter);
-				FINISH_DIRECT_DECODE();
-				break;
-			 }
-			case 36: { // raidPlayerNote unhandled
-				break;
-			}
-			default: {
-				DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
-				SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);
-				strn0cpy(emu->leader_name, eq->leader_name, 64);
-				strn0cpy(emu->player_name, eq->player_name, 64);
-				IN(action);
-				IN(parameter);
-				FINISH_DIRECT_DECODE();
-				break;
-			}
+		case 35: { // raidMOTD
+			// we don't have a nice macro for this
+			structs::RaidMOTD_Struct *__eq_buffer = (structs::RaidMOTD_Struct *)__packet->pBuffer;
+			__eq_buffer->motd[1023] = '\0';
+			size_t motd_size = strlen(__eq_buffer->motd) + 1;
+			__packet->size = sizeof(RaidMOTD_Struct) + motd_size;
+			__packet->pBuffer = new unsigned char[__packet->size];
+			RaidMOTD_Struct *emu = (RaidMOTD_Struct *)__packet->pBuffer;
+			structs::RaidMOTD_Struct *eq = (structs::RaidMOTD_Struct *)__eq_buffer;
+			strn0cpy(emu->general.player_name, eq->general.player_name, 64);
+			strn0cpy(emu->motd, eq->motd, motd_size);
+			IN(general.action);
+			IN(general.parameter);
+			FINISH_DIRECT_DECODE();
+			break;
+		}
+		case 36: { // raidPlayerNote unhandled
+			break;
+		}
+		default: {
+			DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
+			SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);
+			strn0cpy(emu->leader_name, eq->leader_name, 64);
+			strn0cpy(emu->player_name, eq->player_name, 64);
+			IN(action);
+			IN(parameter);
+			FINISH_DIRECT_DECODE();
+			break;
+		}
 		}
 	}
 
@@ -4767,7 +4766,7 @@ namespace RoF
 		IN(y);
 		IN(x);
 		IN(z)
-		IN(zone_reason);
+			IN(zone_reason);
 		IN(success);
 
 		FINISH_DIRECT_DECODE();
@@ -4783,7 +4782,7 @@ namespace RoF
 		FINISH_DIRECT_DECODE();
 	}
 
-// file scope helper methods
+	// file scope helper methods
 	uint32 NextItemInstSerialNumber = 1;
 	uint32 MaxInstances = 2000000000;
 
@@ -4826,7 +4825,7 @@ namespace RoF
 		hdr.slot_type = (merchant_slot == 0) ? slot_id.SlotType : 9; // 9 is merchant 20 is reclaim items?
 		hdr.main_slot = (merchant_slot == 0) ? slot_id.MainSlot : merchant_slot;
 		hdr.sub_slot = (merchant_slot == 0) ? slot_id.SubSlot : 0xffff;
-		hdr.aug_slot = (merchant_slot == 0) ? slot_id.AugSlot : 0xffff;
+		hdr.unknown013 = (merchant_slot == 0) ? slot_id.AugSlot : 0xffff;
 		hdr.price = inst->GetPrice();
 		hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
 		//hdr.merchant_slot = (merchant_slot == 0) ? 1 : 0xffffffff;
@@ -4855,26 +4854,26 @@ namespace RoF
 			ss.write((const char*)&evotop, sizeof(RoF::structs::EvolvingItem));
 		}
 		//ORNAMENT IDFILE / ICON
-		uint32 ornaIcon = 0;
-		uint32 heroModel = 0;
+		uint16 ornaIcon = 0;
+		int32 heroModel = 0;
 		/*
 		if (inst->GetOrnamentationAug(ornamentationAugtype))
 		{
-			const Item_Struct *aug_weap = inst->GetOrnamentationAug(ornamentationAugtype)->GetItem();
-			//Mainhand
-			ss.write(aug_weap->IDFile, strlen(aug_weap->IDFile));
-			ss.write((const char*)&null_term, sizeof(uint8));
-			//Offhand
-			ss.write(aug_weap->IDFile, strlen(aug_weap->IDFile));
-			ss.write((const char*)&null_term, sizeof(uint8));
-			//Icon
-			ornaIcon = aug_weap->Icon;
-			if (aug_weap->HerosForgeModel > 0)
-			{
-				heroModel = (aug_weap->HerosForgeModel * 100) + Inventory::CalcMaterialFromSlot(slot_id_in);
-			}
+		const Item_Struct *aug_weap = inst->GetOrnamentationAug(ornamentationAugtype)->GetItem();
+		//Mainhand
+		ss.write(aug_weap->IDFile, strlen(aug_weap->IDFile));
+		ss.write((const char*)&null_term, sizeof(uint8));
+		//Offhand
+		ss.write(aug_weap->IDFile, strlen(aug_weap->IDFile));
+		ss.write((const char*)&null_term, sizeof(uint8));
+		//Icon
+		ornaIcon = aug_weap->Icon;
+		if (aug_weap->HerosForgeModel > 0)
+		{
+		heroModel = (aug_weap->HerosForgeModel * 100) + Inventory::CalcMaterialFromSlot(slot_id_in);
 		}
-		else 
+		}
+		else
 		*/
 
 		if (inst->GetOrnamentationIDFile() && inst->GetOrnamentationIcon())
@@ -4897,8 +4896,8 @@ namespace RoF
 
 		RoF::structs::ItemSerializationHeaderFinish hdrf;
 		hdrf.ornamentIcon = ornaIcon;
-		//hdrf.unknown061 = 0;
-		//hdrf.unknown062 = 0;
+		hdrf.unknown061 = 0;
+		hdrf.unknown062 = 0;
 		hdrf.unknowna1 = 0xffffffff;
 		hdrf.ornamentHeroModel = heroModel;
 		hdrf.unknown063 = 0;
@@ -4908,7 +4907,7 @@ namespace RoF
 		hdrf.ItemClass = item->ItemClass;
 
 		ss.write((const char*)&hdrf, sizeof(RoF::structs::ItemSerializationHeaderFinish));
-		
+
 		if (strlen(item->Name) > 0)
 		{
 			ss.write(item->Name, strlen(item->Name));
