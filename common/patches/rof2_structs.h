@@ -3111,7 +3111,19 @@ struct MobHealth
 	/*0001*/	uint16	id;//mobs id
 };
 
+struct Track_Struct {
+	uint32 entityid;
+	float distance;
+	// Fields for SoD and later
+	uint8 level;
+	uint8 is_npc;
+	char name[64];
+	uint8 is_pet;
+	uint8 is_merc;
+};
+
 struct Tracking_Struct {
+	uint16 entry_count;
 	Track_Struct Entrys[0];
 };
 
